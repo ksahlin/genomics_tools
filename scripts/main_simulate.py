@@ -19,10 +19,18 @@ def simulate_instance(args):
     g = genome.Genome([0.25]*4,args.genomelen,'genome1')
     g.genome()
     print >> open(genome_path,'w'), g.genome_fasta_format()
-    #contigs
-    ctgs = open(contig_path,'w')
-    for i,x in enumerate(range(0,args.genomelen,(args.contiglen + args.gaplen))):
-        ctgs.write('>ctg{0}\n{1}\n'.format(i,g.sequence[x:x+args.contiglen]))
+
+    #contigs/scaffolds
+    if args.scaffolds:
+    	scafs = open(contig_path,'w')
+    	scaffold = ''
+    	for i,x in enumerate(range(0,args.genomelen,(args.contiglen + args.gaplen))):
+    		scaffold += g.sequence[x:x+args.contiglen]+ 'N'* args.gaplen
+        scafs.write('>scf{0}\n{1}\n'.format(i,scaffold))   	
+    else:
+    	ctgs = open(contig_path,'w')
+    	for i,x in enumerate(range(0,args.genomelen,(args.contiglen + args.gaplen))):
+        	ctgs.write('>ctg{0}\n{1}\n'.format(i,g.sequence[x:x+args.contiglen]))
 
     #reads
     lib = reads.DNAseq(args.read_length ,args.coverage, args.mean,args.sd)
@@ -58,6 +66,7 @@ if __name__ == '__main__':
     parser.add_argument('output_path', type=str, help='path to folder output. ')
     parser.add_argument( '-sort', dest='sort', action='store_true', default=False, help='Coordinate sort the reads in the bam file' )
     parser.add_argument( '-sam', dest='sam', action='store_true', default=False, help='Output a samfile (default is bam)' )
+    parser.add_argument( '-scafs', dest='scaffolds', action='store_true', default=False, help='scaffolds are simulated instead of contigs' )
 
     #parser.add_argument('coverage', type=int, help='Coverage for read library. ')
     #parser.add_argument('outpath', type=str, help='Path to output location. ')
