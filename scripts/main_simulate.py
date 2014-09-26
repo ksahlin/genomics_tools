@@ -25,7 +25,7 @@ def simulate_instance(args):
     	scafs = open(contig_path,'w')
     	scaffold = ''
     	for i,x in enumerate(range(0,args.genomelen,(args.contiglen + args.gaplen))):
-    		scaffold += g.sequence[x:x+args.contiglen]+ 'N'* args.gaplen
+    		scaffold += g.sequence[x:x+args.contiglen]+ 'N'* (args.gaplen-args.error)
         scafs.write('>scf{0}\n{1}\n'.format(i,scaffold))   	
     else:
     	ctgs = open(contig_path,'w')
@@ -67,7 +67,8 @@ if __name__ == '__main__':
     parser.add_argument( '-sort', dest='sort', action='store_true', default=False, help='Coordinate sort the reads in the bam file' )
     parser.add_argument( '-sam', dest='sam', action='store_true', default=False, help='Output a samfile (default is bam)' )
     parser.add_argument( '-scafs', dest='scaffolds', action='store_true', default=False, help='scaffolds are simulated instead of contigs' )
-
+    parser.add_argument( '-error', dest='error', type=int, default=False, help='gap distance error' )
+   
     #parser.add_argument('coverage', type=int, help='Coverage for read library. ')
     #parser.add_argument('outpath', type=str, help='Path to output location. ')
     #parser.add_argument('experiments', type=int, help='Number of experiment for each line in sim_in.txt file to run. ')
