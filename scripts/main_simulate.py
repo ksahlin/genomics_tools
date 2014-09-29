@@ -1,4 +1,4 @@
-import sys,os
+import sys,os,subprocess
 
 import argparse
 from genomics_tools.file_formats import bam
@@ -55,7 +55,15 @@ def simulate_instance(args):
     align.map_paired_reads(read1_path, read2_path, contig_path, bam_path, args)
 
 def main(args):
-	simulate_instance(args)
+    successful_experiments = 0
+    while successful_experiments < 1: 
+        try:
+            simulate_instance(args)
+        except subprocess.CalledProcessError:
+            continue
+
+        successful_experiments += 1
+	
 
 if __name__ == '__main__':
     ##
