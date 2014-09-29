@@ -1,4 +1,4 @@
-import os
+import sys,os
 
 import argparse
 from genomics_tools.file_formats import bam
@@ -6,7 +6,10 @@ from genomics_tools.simulate import genome,contigs,reads
 from mapping import align
 
 def simulate_instance(args):
-    print 'here'
+    if args.burnin >= args.genomelen:
+        print 'Burn-in longer than genome length, exiting...'
+        sys.exit()
+    print 'Started simulating'
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
     genome_path = os.path.join(args.output_path, 'genome.fa')
@@ -23,14 +26,16 @@ def simulate_instance(args):
     #contigs/scaffolds
     if args.scaffolds:
     	scafs = open(contig_path,'w')
+        scafs.write('>scf0\n{0}\n'.format(g.sequence[0:args.burnin]))
     	scaffold = ''
-    	for i,x in enumerate(range(0,args.genomelen,(args.contiglen + args.gaplen))):
+    	for i,x in enumerate(range(args.burnin, args.genomelen,(args.contiglen + args.gaplen))):
     		scaffold += g.sequence[x:x+args.contiglen]+ 'N'* (args.gaplen-args.error)
-        scafs.write('>scf{0}\n{1}\n'.format(i,scaffold))   	
+        scafs.write('>scf{0}\n{1}\n'.format(i+1,scaffold))   	
     else:
     	ctgs = open(contig_path,'w')
-    	for i,x in enumerate(range(0,args.genomelen,(args.contiglen + args.gaplen))):
-        	ctgs.write('>ctg{0}\n{1}\n'.format(i,g.sequence[x:x+args.contiglen]))
+        ctgs.write('>ctg0\n{0}\n'.format(g.sequence[0:args.burnin]))
+    	for i,x in enumerate(range(args.burnin,args.genomelen,(args.contiglen + args.gaplen))):
+        	ctgs.write('>ctg{0}\n{1}\n'.format(i+1,g.sequence[x:x+args.contiglen]))
 
     #reads
     lib = reads.DNAseq(args.read_length ,args.coverage, args.mean,args.sd)
@@ -45,6 +50,7 @@ def simulate_instance(args):
             reads2.write(read)
         i+=1
 
+    print 'Started mapping'
     #mapping
     align.map_paired_reads(read1_path, read2_path, contig_path, bam_path, args)
 
@@ -68,6 +74,8 @@ if __name__ == '__main__':
     parser.add_argument( '-sam', dest='sam', action='store_true', default=False, help='Output a samfile (default is bam)' )
     parser.add_argument( '-scafs', dest='scaffolds', action='store_true', default=False, help='scaffolds are simulated instead of contigs' )
     parser.add_argument( '-error', dest='error', type=int, default=False, help='gap distance error' )
+    parser.add_argument( '-burnin', dest='burnin', type=int, default=False, help='Estimation window' )
+
    
     #parser.add_argument('coverage', type=int, help='Coverage for read library. ')
     #parser.add_argument('outpath', type=str, help='Path to output location. ')
