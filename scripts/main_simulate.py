@@ -34,7 +34,10 @@ def simulate_instance(args):
                     scaffold += g.sequence[x:x+args.contiglen]+ 'N'* (args.gaplen + error)
                 else:
                     scaffold += g.sequence[i*(args.gaplen + error) + x : x + args.contiglen + (i+1)*(args.gaplen + error)] 
-            scafs.write('>scf{0}_gap{1}_errorsize{2}\n{3}\n'.format(i+1, args.gaplen, error, scaffold))   	
+            if error <0:
+                scafs.write('>scf{0}_gap{1}_errorsize_minus{2}\n{3}\n'.format(i+1, args.gaplen, abs(error), scaffold)) 
+            else:
+                scafs.write('>scf{0}_gap{1}_errorsize{2}\n{3}\n'.format(i+1, args.gaplen, error, scaffold))   	
             scaffold = ''
     else:
     	ctgs = open(contig_path,'w')
