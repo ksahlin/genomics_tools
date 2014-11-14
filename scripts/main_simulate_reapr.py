@@ -4,6 +4,7 @@ import argparse
 from genomics_tools.file_formats import bam
 from genomics_tools.simulate import genome,contigs,reads
 from mapping import align
+from genomics_tools.file_formats.various_annotations import to_AGP,to_GFF
 
 def simulate_instance(args):
     print 'Started simulating'
@@ -14,6 +15,8 @@ def simulate_instance(args):
     read1_path = os.path.join(args.output_path, 'reads1.fa')
     read2_path = os.path.join(args.output_path, 'reads2.fa')
     bam_path = os.path.join(args.output_path, 'mapped')
+    gff_path = os.path.join(args.output_path, 'true_error_pos.gff')
+    gff_file = open(gff_path,'w')
 
     #genome
     genomelen = args.burnin + ( (args.contiglen+args.gaplen)*args.nrgaps + args.contiglen ) * len(args.errorsize)
@@ -28,17 +31,36 @@ def simulate_instance(args):
         scafs.write('>scf_burnin\n{0}\n'.format(g.sequence[0:args.burnin]))
     	scaffold = ''
         pos = args.burnin
+
         for error in args.errorsize:
+            scaffold_coord = 0
             for i,x in enumerate(range(pos, pos + args.nrgaps*(args.contiglen + args.gaplen ) + args.contiglen, args.contiglen + args.gaplen)):
+                #print 'pos:', x
                 if (args.gaplen + error) > 0:
-                    scaffold += g.sequence[x:x+args.contiglen]+ 'N'* (args.gaplen + error)
+                    scaffold += g.sequence[x:x+args.contiglen]+ 'N'* (args.gaplen + error) 
+                    scaffold_coord = len(scaffold)
+                    error_start = scaffold_coord - (args.gaplen + error) 
+                    error_stop = scaffold_coord  # error is anywhere in the introduced gap (either contraction or expansion)
                 else:
                     scaffold += g.sequence[i*(args.gaplen + error) + x : x + args.contiglen + (i+1)*(args.gaplen + error)] 
+                    scaffold_coord = len(scaffold)
+                    error_start = scaffold_coord
+                    error_stop = scaffold_coord+1 # error is at a specific position where a contraction has occured
+                if error < 0:
+                    to_GFF(gff_file, '>scf_gap{1}_errorsize_minus{2}'.format(i+1, args.gaplen, abs(error)), 'TRUTH','contraction', error_start, error_stop, 1, '+', '.', 'Note=Error:Contraction {0}bp'.format(abs(error)))
+                elif error == 0:
+                    pass
+                else:
+                    to_GFF(gff_file, '>scf_gap{1}_errorsize{2}'.format(i+1, args.gaplen, abs(error)), 'TRUTH','expansion', error_start, error_stop, 1, '+', '.', 'Note=Error:Expansion {0}bp'.format(abs(error)))
+
             if error <0:
-                scafs.write('>scf{0}_gap{1}_errorsize_minus{2}\n{3}\n'.format(i+1, args.gaplen, abs(error), scaffold)) 
+                scafs.write('>scf_gap{1}_errorsize_minus{2}\n{3}\n'.format(i+1, args.gaplen, abs(error), scaffold)) 
             else:
-                scafs.write('>scf{0}_gap{1}_errorsize{2}\n{3}\n'.format(i+1, args.gaplen, error, scaffold))   	
+                scafs.write('>scf_gap{1}_errorsize{2}\n{3}\n'.format(i+1, args.gaplen, error, scaffold))   
+	
             scaffold = ''
+
+            
     else:
     	ctgs = open(contig_path,'w')
         ctgs.write('>ctg0\n{0}\n'.format(g.sequence[0:args.burnin]))

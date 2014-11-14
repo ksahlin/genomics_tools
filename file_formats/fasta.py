@@ -35,3 +35,8 @@ def fasta_iter(fasta_file):
     
     temp = ''.join(temp)
     yield accession, temp
+
+def to_fasta(file_, acc, seq):
+    file_.write('>{0}\n{1}\n'.format(acc,seq))
+
+
