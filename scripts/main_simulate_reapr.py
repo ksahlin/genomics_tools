@@ -34,7 +34,7 @@ def simulate_instance(args):
 
         for error in args.errorsize:
             scaffold_coord = 0
-            for i,x in enumerate(range(pos, pos + args.nrgaps*(args.contiglen + args.gaplen ) + args.contiglen, args.contiglen + args.gaplen)):
+            for i,x in enumerate(range(pos, pos + args.nrgaps*(args.contiglen + args.gaplen ), args.contiglen + args.gaplen)):
                 #print 'pos:', x
                 if (args.gaplen + error) > 0:
                     scaffold += g.sequence[x:x+args.contiglen]+ 'N'* (args.gaplen + error) 
@@ -47,11 +47,11 @@ def simulate_instance(args):
                     error_start = scaffold_coord
                     error_stop = scaffold_coord+1 # error is at a specific position where a contraction has occured
                 if error < 0:
-                    to_GFF(gff_file, '>scf_gap{1}_errorsize_minus{2}'.format(i+1, args.gaplen, abs(error)), 'TRUTH','contraction', error_start, error_stop, 1, '+', '.', 'Note=Error:Contraction {0}bp'.format(abs(error)))
+                    to_GFF(gff_file, '>scf_gap{1}_errorsize_minus{2}'.format(i+1, args.gaplen, abs(error)), 'TRUTH','FCD', error_start, error_stop, 1, '+', '.', 'Note=Error:Contraction {0}bp'.format(abs(error)))
                 elif error == 0:
                     pass
                 else:
-                    to_GFF(gff_file, '>scf_gap{1}_errorsize{2}'.format(i+1, args.gaplen, abs(error)), 'TRUTH','expansion', error_start, error_stop, 1, '+', '.', 'Note=Error:Expansion {0}bp'.format(abs(error)))
+                    to_GFF(gff_file, '>scf_gap{1}_errorsize{2}'.format(i+1, args.gaplen, abs(error)), 'TRUTH','FCD', error_start, error_stop, 1, '+', '.', 'Note=Error:Expansion {0}bp'.format(abs(error)))
 
             if error <0:
                 scafs.write('>scf_gap{1}_errorsize_minus{2}\n{3}\n'.format(i+1, args.gaplen, abs(error), scaffold)) 
