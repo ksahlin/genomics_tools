@@ -28,7 +28,7 @@ def simulate_instance(args):
     #contigs/scaffolds
     if args.scaffolds:
     	scafs = open(contig_path,'w')
-        scafs.write('>scf_burnin\n{0}\n'.format(g.sequence[0:args.burnin]))
+        scafs.write('>scf_burnin{0}\n{1}\n'.format(args.gaplen,g.sequence[0:args.burnin]))
     	scaffold = ''
         pos = args.burnin
 
