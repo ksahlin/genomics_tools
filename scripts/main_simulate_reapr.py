@@ -42,7 +42,9 @@ def simulate_instance(args):
                     error_start = scaffold_coord - (args.gaplen + error) 
                     error_stop = scaffold_coord  # error is anywhere in the introduced gap (either contraction or expansion)
                 else:
-                    scaffold += g.sequence[i*(args.gaplen + error) + x : x + args.contiglen + (i+1)*(args.gaplen + error)] 
+                    #scaffold += g.sequence[i*(args.gaplen + error) + x : x + args.contiglen + (i+1)*(args.gaplen + error)] 
+                    scaffold += g.sequence[x : x + args.contiglen + (args.gaplen + error)] 
+
                     scaffold_coord = len(scaffold)
                     error_start = scaffold_coord
                     error_stop = scaffold_coord+1 # error is at a specific position where a contraction has occured
