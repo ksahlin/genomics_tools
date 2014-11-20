@@ -37,10 +37,13 @@ def simulate_instance(args):
             for i,x in enumerate(range(pos, pos + (args.nrgaps + 1)*(args.contiglen + args.gaplen ), args.contiglen + args.gaplen)):
                 #print 'pos:', x
                 if (args.gaplen + error) > 0:
-                    scaffold += g.sequence[x:x+args.contiglen]+ 'N'* (args.gaplen + error) 
-                    scaffold_coord = len(scaffold)
-                    error_start = scaffold_coord - (args.gaplen + error) 
-                    error_stop = scaffold_coord  # error is anywhere in the introduced gap (either contraction or expansion)
+                    if i < args.nrgaps:
+                        scaffold += g.sequence[x:x+args.contiglen]+ 'N'* (args.gaplen + error) 
+                        scaffold_coord = len(scaffold)
+                        error_start = scaffold_coord - (args.gaplen + error) 
+                        error_stop = scaffold_coord  # error is anywhere in the introduced gap (either contraction or expansion)
+                    else:
+                        scaffold += g.sequence[x:x+args.contiglen]
                 else:
                     #scaffold += g.sequence[i*(args.gaplen + error) + x : x + args.contiglen + (i+1)*(args.gaplen + error)] 
                     scaffold += g.sequence[x : x + args.contiglen + (args.gaplen + error)] 
@@ -55,7 +58,7 @@ def simulate_instance(args):
                     to_GFF(gff_file, 'scf_gap{1}_errorsize{2}'.format(i+1, args.gaplen, abs(error)), 'TRUTH','FCD', error_start, error_stop, 1, '+', '.', 'Note=Error:Expansion {0}bp'.format(abs(error)))
                 else:
                     pass
-                    
+
             if error <0:
                 scafs.write('>scf_gap{1}_errorsize_minus{2}\n{3}\n'.format(i+1, args.gaplen, abs(error), scaffold)) 
             else:
