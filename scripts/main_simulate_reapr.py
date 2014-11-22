@@ -65,7 +65,11 @@ def simulate_instance(args):
                 scafs.write('>scf_gap{1}_errorsize{2}\n{3}\n'.format(i+1, args.gaplen, error, scaffold))   
 	
             scaffold = ''
-
+        # dummy sequences to prevent bwa tor remove any of our scaffolds
+        for i in range(10):
+            g = genome.Genome([0.25]*4,10000,'z_dummy{0}'.format(i+1))
+            g.genome()
+            scafs.write('>z_dummy{0}\n{1}\n'.format(i+1, g.sequence)) 
             
     else:
     	ctgs = open(contig_path,'w')
