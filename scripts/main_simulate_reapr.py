@@ -119,6 +119,7 @@ if __name__ == '__main__':
     parser.add_argument( '-errors', dest='errorsize', type=int, nargs='+', default=False, help='gap distance error' )
     parser.add_argument( '-burnin', dest='burnin', type=int, default=False, help='Estimation window' )
     parser.add_argument( '-nrgaps', dest='nrgaps', type=int, default=False, help='Number of gaps' )
+    parser.add_argument('--threads', type=str, dest='threads', default='8', required=False, help='Number of threads for bwa mem.')
 
 
    
