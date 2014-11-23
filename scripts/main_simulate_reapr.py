@@ -19,7 +19,7 @@ def simulate_instance(args):
     gff_file = open(gff_path,'w')
 
     #genome
-    genomelen = args.burnin + ( (args.contiglen+args.gaplen)*(args.nrgaps + 1 ) + args.contiglen ) * len(args.errorsize)
+    genomelen = args.burnin + ( (args.contiglen+args.gaplen)*(args.nrgaps + 1 ) + args.contiglen ) * (len(args.errorsize) + 1)
     print genomelen
     g = genome.Genome([0.25]*4,genomelen,'genome1')
     g.genome()
@@ -65,11 +65,12 @@ def simulate_instance(args):
                 scafs.write('>scf_gap{1}_errorsize{2}\n{3}\n'.format(i+1, args.gaplen, error, scaffold))   
 	
             scaffold = ''
+            pos = x + 2*args.contiglen  
         # dummy sequences to prevent bwa tor remove any of our scaffolds
         for i in range(10):
-            g = genome.Genome([0.25]*4,10000,'z_dummy{0}'.format(i+1))
-            g.genome()
-            scafs.write('>z_dummy{0}\n{1}\n'.format(i+1, g.sequence)) 
+            dummy = genome.Genome([0.25]*4,1000,'z_dummy{0}'.format(i+1))
+            dummy.genome()
+            scafs.write('>z_dummy{0}\n{1}\n'.format(i+1, dummy.sequence)) 
             
     else:
     	ctgs = open(contig_path,'w')
@@ -92,8 +93,8 @@ def simulate_instance(args):
 
     print 'Started mapping'
     #mapping
-    #align.map_paired_reads(read1_path, read2_path, contig_path, bam_path, args)
-    align.bwa_mem(read1_path, read2_path, contig_path, bam_path, args)
+    align.map_paired_reads(read1_path, read2_path, contig_path, bam_path, args)
+    #align.bwa_mem(read1_path, read2_path, contig_path, bam_path, args)
 
 def main(args):
     successful_experiments = 0
