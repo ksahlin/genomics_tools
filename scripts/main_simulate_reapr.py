@@ -148,7 +148,7 @@ if __name__ == '__main__':
         if args.mean == None or args.sd == None:
             print "Argument 'distr' set to 'normal', need both --mean and --sd specified to continue. "
             sys.exit()        
-    if args.distr == 'uniform':
+    elif args.distr == 'uniform':
         if args.min_size == None or args.max_size == None:
             print "Argument 'distr' set to 'uniform', need both --min_size and --max_size specified to continue. "
             sys.exit()
