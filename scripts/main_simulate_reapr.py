@@ -79,8 +79,13 @@ def simulate_instance(args):
         	ctgs.write('>ctg{0}\n{1}\n'.format(i+1,g.sequence[x:x+args.contiglen]))
 
     #reads
-    lib = reads.DNAseq(args.read_length ,args.coverage, args.mean,args.sd)
-    lib.simulate_pe_reads(g)
+    if args.distr == 'normal':
+        lib = reads.DNAseq(args.read_length ,args.coverage, distribution=args.distr, mean=args.mean,stddev=args.sd)
+        lib.simulate_pe_reads(g)
+    elif args.distr == 'uniform':
+        lib = reads.DNAseq(args.read_length ,args.coverage, distribution=args.distr, min_size=args.min_size,max_size=args.max_size)
+        lib.simulate_pe_reads(g)
+
     reads1 = open(read1_path,'w')
     reads2 = open(read2_path,'w')
     i=0
@@ -113,8 +118,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Simulate paired end reads with a given mean and standard deviation on mean insert size. A given coverage should also be provided.")
     parser.add_argument('contiglen', type=int, help='Length of contigs. ')
     parser.add_argument('gaplen', type=int, help='Length of gap. ')
-    parser.add_argument('mean', type=int, help='Mean insert. ')
-    parser.add_argument('sd', type=int, help='Stddev insert.')
+    parser.add_argument('distr', type=str, help='Distribution of insert sizes. ')
     parser.add_argument('coverage', type=int, help='Coverage. ')
     parser.add_argument('read_length', type=int, help='Length of read fragments within a pair. ')
     parser.add_argument('output_path', type=str, help='path to folder output. ')
@@ -127,6 +131,10 @@ if __name__ == '__main__':
     parser.add_argument('--threads', type=str, dest='threads', default='8', required=False, help='Number of threads for bwa mem.')
 
 
+    parser.add_argument('--mean', dest='mean',type=int, default=None, help='Mean insert. ')
+    parser.add_argument('--sd', dest='sd', type=int, default=None, help='Stddev insert.')
+    parser.add_argument('--min_size', dest='min_size', type=int, default=None, help='Min insert size (only effective if distr=uniform). ')
+    parser.add_argument('--max_size', dest='max_size', type=int, default=None, help='Max insert size (only effective if distr=uniform). ')
    
     #parser.add_argument('coverage', type=int, help='Coverage for read library. ')
     #parser.add_argument('outpath', type=str, help='Path to output location. ')
@@ -135,4 +143,25 @@ if __name__ == '__main__':
     #parser.add_argument('c_len', type=int, help='Contig length. ')
 
     args = parser.parse_args()
+
+    if args.distr == 'normal':
+        if args.mean == None or args.sd == None:
+            print "Argument 'distr' set to 'normal', need both --mean and --sd specified to continue. "
+            sys.exit()        
+    if args.distr == 'uniform':
+        if args.min_size == None or args.max_size == None:
+            print "Argument 'distr' set to 'uniform', need both --min_size and --max_size specified to continue. "
+            sys.exit()
+    else:
+        print "Argument 'distr' only takes 'normal' or 'uniform'. You specified: {0}. Exiting without continue. ".format(args.distr)
+        sys.exit()
+
     main(args)
+
+
+
+
+
+
+
+

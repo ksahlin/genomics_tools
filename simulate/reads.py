@@ -9,21 +9,32 @@ from genomics_tools.simulate.misc_functions import reverse_complement, read_in_f
 
 class PairedEndRead(object):
     """docstring for PairedEndRead"""
-    def __init__(self):
+    def __init__(self,distribution = 'normal',mean=None,sigma=None,read_length= None, min_size=None, max_size=None):
         super(PairedEndRead, self).__init__()
+        self.distribution = distribution
+        self.mean = mean
+        self.sigma = sigma
+        self.read_length = read_length
+        self.min_size = min_size
+        self.max_size = max_size
 
-    def generate(self,reference_accession, reference_sequence, read_index,mean,sigma,read_length):
-        self.fragment_length = int(random.gauss(mean,sigma))
+    def generate(self,reference_accession, reference_sequence, read_index):
+        if self.distribution == 'normal':
+            self.fragment_length = int(random.gauss(self.mean,self.sigma))
+        elif self.distribution == 'uniform':
+            self.fragment_length = int(random.uniform(self.min_size,self.max_size))
+
         if self.fragment_length >= len(reference_sequence): 
             raise Exception("To short reference sequence length for \
                 simulated read. \nRead fragment: {0}\nTranscript \
                 length:{1}".format(self.fragment_length,len(reference_sequence)))
+        
         self.start_pos = random.randrange(len(reference_sequence) - self.fragment_length)
-        self.read1 = reference_sequence[self.start_pos : self.start_pos + read_length]
-        self.read2 = reverse_complement(reference_sequence[self.start_pos + self.fragment_length - read_length : self.start_pos+self.fragment_length])
+        self.read1 = reference_sequence[self.start_pos : self.start_pos + self.read_length]
+        self.read2 = reverse_complement(reference_sequence[self.start_pos + self.fragment_length - self.read_length : self.start_pos+self.fragment_length])
         self.reference_accession = reference_accession
         self.read_index = read_index
-        self.read_length = read_length
+
     def fastq_format(self):
         r1= '@HWUSI-EAS100R:6:73:941:{0},genome:{1}\n{2}\
         \n@HWUSI-EAS100R:6:73:941:{0},genome:{1}\n{3}\n'.format(self.read_index,
@@ -44,21 +55,31 @@ class PairedEndRead(object):
 
 class MatePairRead(object):
     """docstring for MatePairRead"""
-    def __init__(self):
+    def __init__(self, distribution = 'normal',mean=None,sigma=None,read_length= None,min_size=None, max_size=None):
         super(MatePairRead, self).__init__()
+        self.distribution = distribution
+        self.mean = mean
+        self.sigma = sigma
+        self.read_length = read_length
+        self.min_size = min_size
+        self.max_size = max_size
 
-    def generate(self,reference_accession, reference_sequence, read_index,mean,sigma,read_length):
-        self.fragment_length = int(random.gauss(mean,sigma))
+    def generate(self,reference_accession, reference_sequence, read_index):
+        if self.distribution == 'normal':
+            self.fragment_length = int(random.gauss(self.mean,self.sigma))
+        elif self.distribution == 'uniform':
+            self.fragment_length = int(random.uniform(self.min_size,self.max_size))
+
         if self.fragment_length >= len(reference_sequence): 
             raise Exception("To short reference sequence length for \
                 simulated read. \nRead fragment: {0}\nTranscript \
                 length:{1}".format(self.fragment_length,len(reference_sequence)))
         self.start_pos = random.randrange(len(reference_sequence) - self.fragment_length)
-        self.read1 = reverse_complement(reference_sequence[self.start_pos : self.start_pos + read_length])
-        self.read2 = reference_sequence[self.start_pos + self.fragment_length - read_length : self.start_pos+self.fragment_length]
+        self.read1 = reverse_complement(reference_sequence[self.start_pos : self.start_pos + self.read_length])
+        self.read2 = reference_sequence[self.start_pos + self.fragment_length - self.read_length : self.start_pos+self.fragment_length]
         self.reference_accession = reference_accession
         self.read_index = read_index
-        self.read_length = read_length
+
     def fastq_format(self):
         r1= '@HWUSI-EAS100R:6:73:941:{0},(RevCompOriented)genome:{1}\n{2}\
         \n@HWUSI-EAS100R:6:73:941:{0},genome:{1}\n{3}\n'.format(self.read_index,
@@ -170,12 +191,18 @@ class Transcript(object):
 
 class DNAseq(object):
     """docstring for DNAseq"""
-    def __init__(self,lib_read_length,coverage, lib_mean,lib_std_dev,contamination_rate = 0,contamine_mean= None,contamine_std_dev= None):
+    def __init__(self,read_length,coverage, mean=None,stddev=None, min_size=None, max_size = None, contamination_rate = 0,contamine_mean= None,contamine_std_dev= None, distribution='normal'):
         super(DNAseq, self).__init__()
+        self.distribution = distribution
+        
+        if self.distribution == 'normal':
+            self.mean = mean
+            self.stddev = stddev
+        elif self.distribution == 'uniform':
+            self.min_size = min_size
+            self.max_size = max_size
 
-        self.lib_mean = lib_mean
-        self.lib_std_dev = lib_std_dev
-        self.lib_read_length = lib_read_length
+        self.read_length = read_length
         self.contamination_rate = contamination_rate
         self.contamine_mean = contamine_mean
         self.contamine_std_dev = contamine_std_dev
@@ -187,14 +214,18 @@ class DNAseq(object):
 
         """
         genome_length = len(genome.sequence)
-        number_of_reads=(genome_length*self.coverage)/(2*self.lib_read_length)     #Specifiels the number of simulated read pairs (related to insertion size length of genome and coverage
+        number_of_reads=(genome_length*self.coverage)/(2*self.read_length)     #Specifiels the number of simulated read pairs (related to insertion size length of genome and coverage
     
         self.reads = []
         
         
         for i in range(number_of_reads):
-            read_pair = PairedEndRead()
-            read_pair.generate(genome.accession.replace(" ",""), genome.sequence, i, self.lib_mean,self.lib_std_dev,self.lib_read_length)        
+            if self.distribution == 'normal':
+                read_pair = PairedEndRead(distribution = self.distribution, mean=self.mean,sigma=self.stddev,read_length=self.read_length)
+            elif self.distribution == 'uniform':
+                read_pair = PairedEndRead(distribution = self.distribution, min_size=self.min_size,max_size=self.max_size,read_length=self.read_length)
+            
+            read_pair.generate(genome.accession.replace(" ",""), genome.sequence, i)        
             self.reads.append(read_pair)
 
     def simulate_mp_reads(self,genome):
@@ -203,7 +234,7 @@ class DNAseq(object):
 
         """
         genome_length = len(genome.sequence)
-        number_of_reads=(genome_length*self.coverage)/(2*self.lib_read_length)     #Specifiels the number of simulated read pairs (related to insertion size length of genome and coverage
+        number_of_reads=(genome_length*self.coverage)/(2*self.read_length)     #Specifiels the number of simulated read pairs (related to insertion size length of genome and coverage
     
         self.reads = []
         
@@ -211,12 +242,17 @@ class DNAseq(object):
         for i in range(number_of_reads):
             r = random.uniform(0,1)
             if r < self.contamination_rate:
-                read_pair = PairedEndRead()
-                read_pair.generate(genome.accession.replace(" ",""), genome.sequence, i, self.contamine_mean,self.contamine_std_dev,self.lib_read_length)
+                # contamination distribution is allways normally distribbuted in this implementation
+                read_pair = PairedEndRead(mean=self.contamine_mean, sigma=self.contamine_std_dev, read_length=self.read_length)
+                read_pair.generate(genome.accession.replace(" ",""), genome.sequence, i)
 
             else:
-                read_pair = MatePairRead()
-                read_pair.generate(genome.accession.replace(" ",""), genome.sequence, i, self.lib_mean,self.lib_std_dev,self.lib_read_length)
+                if self.distribution == 'normal':
+                    read_pair = MatePairRead(distribution = self.distribution, mean=self.mean,sigma=self.stddev,read_length=self.read_length)
+                elif self.distribution == 'uniform':
+                    read_pair = MatePairRead(distribution = self.distribution, min_size=self.min_size, max_size=self.max_size,read_length=self.read_length)
+                
+                read_pair.generate(genome.accession.replace(" ",""), genome.sequence, i)
             
             self.reads.append(read_pair)
 
