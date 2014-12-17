@@ -68,7 +68,7 @@ def simulate_instance(args):
             pos = x + 2*args.contiglen  
         # dummy sequences to prevent bwa tor remove any of our scaffolds
         for i in range(10):
-            dummy = genome.Genome([0.25]*4,1000,'z_dummy{0}'.format(i+1))
+            dummy = genome.Genome([0.25]*4,10000,'z_dummy{0}'.format(i+1))
             dummy.genome()
             scafs.write('>z_dummy{0}\n{1}\n'.format(i+1, dummy.sequence)) 
             
