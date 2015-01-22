@@ -98,8 +98,8 @@ def simulate_instance(args):
 
     print 'Started mapping'
     #mapping
-    align.map_paired_reads(read1_path, read2_path, contig_path, bam_path, args)
-    #align.bwa_mem(read1_path, read2_path, contig_path, bam_path, args)
+    #align.map_paired_reads(read1_path, read2_path, contig_path, bam_path, args)
+    align.bwa_mem(read1_path, read2_path, contig_path, bam_path, args)
 
 def main(args):
     successful_experiments = 0
