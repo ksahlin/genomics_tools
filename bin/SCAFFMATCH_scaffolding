@@ -1,0 +1,10 @@
+#!/bin/bash
+module add bioinfo-tools bowtie2
+
+#!/bin/bash
+for arg in "$@"; do
+    args="$args $arg"
+done
+
+scaffmatch $args
+

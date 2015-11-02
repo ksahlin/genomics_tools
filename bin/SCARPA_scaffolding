@@ -1,0 +1,21 @@
+#!/bin/bash
+module add bioinfo-tools bwa bowtie
+if [ $# -ne 4 ]; then
+        echo "Usage: `basename $0` <outdir> <contigs> <reads> <insert>"
+        echo "Final product will be at <outdir>/scaffolds.fa"
+        exit -1
+fi
+
+        outdir=$1
+        contigs=$2
+        reads=$3
+        insert=$4
+
+        if [ -d $outdir ]; then
+                rm -r $outdir
+        fi
+        echo "Scaffolding contigs from $contigs with paired reads from $reads and writing output to $outdir.";
+
+SCARPA -bin /home/kris/prefix/bin/ $contigs $reads $outdir $insert bowtie -mapper_ops "-v 0" 
+#  $contigs $reads1 $reads2 $outdir"/mapped.bam" "bwa"
+#/usr/bin/time -v opera1.2  $contigs  $outdir"/mapped.bam" $outdir

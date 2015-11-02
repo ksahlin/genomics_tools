@@ -1,0 +1,9 @@
+#!/bin/bash
+
+module add bioinfo-tools bwa bowtie2
+
+for arg in "$@"; do
+    args="$args $arg"
+done
+
+python2.7 ~/prefix/bin/align $args
