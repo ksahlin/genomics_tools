@@ -2,7 +2,18 @@ import argparse
 import os
 
 from genomics_tools.file_formats import quast
-		
+
+
+def parse_GapFiller(infile_):
+	pass		
+def parse_GapCloser(infile_):
+	pass
+
+def parse_Salmela(infile_):
+	pass
+
+def run_quast
+
 def main(args):
 	if not os.path.exists(args.outpath):
 		os.mkdir(args.outpath)

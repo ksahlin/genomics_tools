@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+import argparse
+import pysam
+
+try:
+	import matplotlib
+	matplotlib.use('agg')
+	import matplotlib.pyplot as plt
+	import seaborn as sns
+	sns.set_palette("husl", desat=.6)
+except ImportError:
+	pass
+#import matplotlib.pyplot as plt
+
+def is_proper_aligned_unique_innie(read):
+    mapped_ok = not (read.is_unmapped or read.mate_is_unmapped)
+    orientation_ok = (read.is_reverse and not read.mate_is_reverse and read.tlen < 0) or \
+            (not read.is_reverse and read.mate_is_reverse and read.tlen > 0)
+    quality_ok = read.mapq > 10 and not read.is_secondary
+    same_ref = read.rname == read.mrnm
+
+    return mapped_ok and orientation_ok and quality_ok and same_ref
+
+def is_proper_aligned_unique_outie(read):
+    mapped_ok = not (read.is_unmapped or read.mate_is_unmapped)
+    orientation_ok = (read.is_reverse and not read.mate_is_reverse and read.tlen > 0) or \
+            (not read.is_reverse and read.mate_is_reverse and read.tlen < 0)
+    quality_ok = read.mapq > 10 and not read.is_secondary
+    same_ref = read.rname == read.mrnm
+
+    return mapped_ok and orientation_ok and quality_ok and same_ref
+
+def ff_or_rr(read):
+    mapped_ok = not (read.is_unmapped or read.mate_is_unmapped)
+    orientation_ok = (read.is_reverse and read.mate_is_reverse) or \
+            (read.is_reverse and read.mate_is_reverse)
+    quality_ok = read.mapq > 10 and not read.is_secondary
+    same_ref = read.rname == read.mrnm
+
+    return mapped_ok and orientation_ok and quality_ok and same_ref
+
+
+def plot_insert_sizes(bamfile,outfile_path):
+    bamfile = pysam.Samfile(bamfile, 'rb')
+    i_sizes_fr = []
+    i_sizes_rf = []
+    i_sizes_ff = []
+    for read in bamfile:
+        if abs(read.tlen) < 0 or abs(read.tlen) > 10000:
+            continue
+	if is_proper_aligned_unique_outie(read):
+            i_sizes_rf.append(abs(read.tlen))
+        if is_proper_aligned_unique_innie(read):
+            i_sizes_fr.append(abs(read.tlen))
+	if ff_or_rr(read):
+            i_sizes_ff.append(abs(read.tlen))
+
+    print("Number of pairs ---> <----", len(i_sizes_fr))
+    print("Number of pairs <--- ---->", len(i_sizes_rf))
+    print("Number of pairs ----> ----> or <---- <-----", len(i_sizes_ff))
+    print("contamine_rate:", len(i_sizes_fr)/ float(len(i_sizes_fr) + len(i_sizes_rf)) )
+    n = float(len(i_sizes_rf))
+    mu_rf = sum(i_sizes_rf)/n
+    stddev_rf = (sum(list(map((lambda x: x ** 2 - 2 * x * mu_rf + mu_rf ** 2), i_sizes_rf))) / (n - 1)) ** 0.5
+    print("mean rf:", mu_rf)
+    print("stddev rf:", stddev_rf)
+
+    n = float(len(i_sizes_fr))
+    mu_fr = sum(i_sizes_fr)/n
+    stddev_fr = (sum(list(map((lambda x: x ** 2 - 2 * x * mu_fr + mu_fr ** 2), i_sizes_fr))) / (n - 1)) ** 0.5
+    print("mean fr:", mu_fr)
+    print("stddev fr:", stddev_fr)
+
+    n = float(len(i_sizes_ff))
+    mu_ff = sum(i_sizes_ff)/n
+    stddev_ff = (sum(list(map((lambda x: x ** 2 - 2 * x * mu_ff + mu_ff ** 2), i_sizes_ff))) / (n - 1)) ** 0.5
+    print("mean ff or rr:", mu_ff)
+    print("stddev ff or rr", stddev_ff)
+
+    labels = []
+    labels.append("fr --> <--")
+    labels.append("rf <-- -->")
+    plt.hist(i_sizes_fr,bins=100,color='r',label=labels[0])
+    plt.hist(i_sizes_rf,bins=100,color='b',label=labels[1])
+    plt.ylabel('Frequency') 
+    plt.xlabel('Fragment size')  
+    plt.legend( )
+    plt.savefig(outfile_path)
+
+if __name__ == '__main__':
+
+	parser = argparse.ArgumentParser()
+	parser.add_argument('bam', type=str, help='bam file. ')
+	parser.add_argument('outfile', type=str, help='outfolder path NEEDS TO BE FULL PATH with no slash at end!. e.g /Users/ksahlin/_tmp/MODIL/modil_out ')
+
+
+	args = parser.parse_args()
+
+	plot_insert_sizes( args.bam, args.outfile )

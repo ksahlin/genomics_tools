@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+import argparse
+import re
+try:
+        import matplotlib
+        matplotlib.use('agg')
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        sns.set_palette("husl", desat=.6)
+except ImportError:
+        print("could not load either module matplotlib or seaborn")
+
+def ReadInContigseqs(contigfile):
+    cont_dict = {}
+    k = 0
+    temp = ''
+    accession = ''
+    for line in contigfile:
+        if line[0] == '>' and k == 0:
+            accession = line[1:].strip().split()[0]
+            cont_dict[accession] = ''
+            k += 1
+        elif line[0] == '>':
+            cont_dict[accession] = temp
+            temp = ''
+            accession = line[1:].strip().split()[0]
+        else:
+            temp += line.strip()
+    cont_dict[accession] = temp
+
+    return(cont_dict)
+
+def plot(n_lengths,outfile_path):
+    #labels = []
+    #labels.append("Mean gap size: {0}".format(sum(n_lengths)/len(n_lengths)))
+    #labels.append("Total number of gaps: {0}".format(len(n_lengths)))
+    plt.hist(n_lengths,bins=100)
+    plt.ylabel('Frequency')
+    plt.xlabel('Gap size')
+    plt.title(r'Mean gap size={0}, Total number of gaps={1}'.format(sum(n_lengths)/len(n_lengths), len(n_lengths)) )
+    plt.legend( )
+    plt.savefig(outfile_path)
+
+def find_gap_lengths(scafs):
+    seq = "".join([scf for scf in scafs.values()] )
+    result = re.findall("[Nn]+", seq)
+    gaps = []
+    for match in result:
+        gaps.append(len(match))
+    return gaps
+
+def main(args):
+    scafs = ReadInContigseqs(open(args.fasta,'r'))
+    gaps = find_gap_lengths(scafs)
+    plot(gaps,args.outfile)
+
+if __name__ == '__main__':
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('fasta', type=str, help='Fasta file. ')
+        parser.add_argument('outfile', type=str, help='Outfile path NEEDS TO BE FULL PATH with no slash at end!. e.g /Users/ksahlin/_tmp/MODIL/modil_out ')
+        args = parser.parse_args()
+
+        main( args )

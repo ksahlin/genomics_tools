@@ -214,7 +214,7 @@ class DNAseq(object):
 
         """
         genome_length = len(genome.sequence)
-        number_of_reads=(genome_length*self.coverage)/(2*self.read_length)     #Specifiels the number of simulated read pairs (related to insertion size length of genome and coverage
+        number_of_reads=int((genome_length*self.coverage)/(2*self.read_length) )    #Specifiels the number of simulated read pairs (related to insertion size length of genome and coverage
     
         self.reads = []
         
@@ -234,7 +234,7 @@ class DNAseq(object):
 
         """
         genome_length = len(genome.sequence)
-        number_of_reads=(genome_length*self.coverage)/(2*self.read_length)     #Specifiels the number of simulated read pairs (related to insertion size length of genome and coverage
+        number_of_reads=int((genome_length*self.coverage)/(2*self.read_length))    #Specifiels the number of simulated read pairs (related to insertion size length of genome and coverage
     
         self.reads = []
         

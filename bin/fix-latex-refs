@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+import argparse
+import re
+
+
+def main(args):
+	new_file = []
+	for line in open(args.bibfile,'r'):
+		if re.match("Pmid",line.lstrip()) or re.match("Note",line.lstrip()):
+			#print line
+			continue
+		elif re.match("Doi",line.lstrip()):
+			#print line
+			continue
+		elif re.match("Url",line.lstrip()):
+			#print line
+			continue
+		elif re.match("Month",line.lstrip()):
+			#print line
+			continue
+		# preserve capltal letters by putting {} around them if they are not already there
+		elif re.match("Title", line.lstrip()):
+			matches = re.finditer('[A-Z}]+', line.lstrip()[1:])
+			if re.findall("MindTheGap", line):
+				print 'here', line
+			#print matches
+			new_line = line.lstrip()[1:]
+			for match in matches:
+				# if the match is not already in {}, or it is the "}" ending the Title field
+				if match.group()[-1] != "}":
+					old = match.group()
+					new = "{" + match.group() + "}"
+					new_line = new_line.replace(old,  new)
+					#print new_line
+					#print match.start(), match.group()
+
+			print 'T' + new_line
+			new_file.append('T'+new_line)
+
+		else:
+			new_file.append(line)
+
+	new_file_as_string = "".join(new_file)
+	#print new_file_as_string
+	outfile = open(args.outfile, "w")
+	print >> outfile, new_file_as_string
+
+
+if __name__ == '__main__':
+
+	parser = argparse.ArgumentParser(description="Formats a latex bib file by: 1. Preserving capitalized words and abbreviations in referencs. 2. removing URL and DOI fields. ")
+	parser.add_argument('bibfile', type=str, help='A LaTeX .bib file. ')
+	parser.add_argument('outfile', type=str, help='Prefix of the formatted .bib file. ')
+	args = parser.parse_args()
+	main(args)

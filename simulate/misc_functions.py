@@ -13,7 +13,8 @@ def reverse_complement(string):
             reverse complement of the input (DNA) string.
 
     """
-    rev_nuc={'A':'T','C':'G','G':'C','T':'A','N':'N','X':'X'}
+    rev_nuc={'A':'T','C':'G','G':'C','T':'A','N':'N','X':'X', 
+    'a':'t', 't':'a','g':'c','c':'g'}
     rev_comp = ''.join([rev_nuc[nucl] for nucl in reversed(string)])
     return(rev_comp)
 

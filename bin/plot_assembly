@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ $# -ne 3 ]; then
+        echo "Usage: `basename $0` <contigs> <reference> <outfolder>"
+        exit -1
+fi
+
+        ref=$2
+        contigs=$1
+        outfolder=$3
+
+        if [ ! -d $outfolder ]; then
+                mkdir -p $outfolder
+        fi
+        prefix=$outfolder/out
+        nucmer -maxmatch -c 100 -p $prefix $ref $contigs
+        #show-tiling -c $prefix.delta  > $prefix.tiling
+        mummerplot $prefix.delta -R $ref -p $prefix -l  --postscript

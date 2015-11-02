@@ -1,0 +1,154 @@
+#!/usr/bin/env python2.7
+
+import argparse
+import pysam
+import sys
+from itertools import islice
+
+def is_proper_aligned_unique_innie(read):
+    mapped_ok = not (read.is_unmapped or read.mate_is_unmapped)
+    orientation_ok = (read.is_reverse and not read.mate_is_reverse and read.tlen < 0) or \
+            (not read.is_reverse and read.mate_is_reverse and read.tlen > 0)
+    quality_ok = read.mapq > 10 and not read.is_secondary
+    same_ref = read.rname == read.mrnm
+
+    return mapped_ok and orientation_ok and quality_ok and same_ref
+
+
+def is_proper_aligned_unique_outie(read):
+    mapped_ok = not (read.is_unmapped or read.mate_is_unmapped)
+    orientation_ok = (read.is_reverse and not read.mate_is_reverse and read.tlen > 0) or \
+            (not read.is_reverse and read.mate_is_reverse and read.tlen < 0)
+    quality_ok = read.mapq > 10 and not read.is_secondary
+    same_ref = read.rname == read.mrnm
+
+    return mapped_ok and orientation_ok and quality_ok and same_ref
+
+
+# def fasta_parser(fasta_file):
+#     fasta_seqs = {}
+#     k = 0
+#     temp = ''
+#     accession = ''
+#     for line in fasta_file:
+#         if line[0] == '>' and k == 0:
+#             accession = line[1:].strip().split()[0]
+#             fasta_seqs[accession] = ''
+#             k += 1
+#         elif line[0] == '>':
+#             fasta_seqs[accession] = temp
+#             temp = ''
+#             accession = line[1:].strip().split()[0]
+#         else:
+#             temp += line.strip()
+#     fasta_seqs[accession] = temp
+#     return(fasta_seqs)
+
+
+def fastx_parser(fastx_file, fasta=True):
+    with open(fastx_file) as f:
+        if fasta:
+            fasta_seqs = []
+            while True:
+                next_2_lines = list(islice(f, 2))
+                if not next_2_lines:
+                    break
+
+                else:
+                    record = tuple(map(lambda x: x.strip(), next_2_lines))
+                    fasta_seqs.append(record)
+            return(fasta_seqs)
+
+        else:
+            fastq_seqs = []
+            while True:
+                next_4_lines = list(islice(f, 4))
+                if not next_4_lines:
+                    break
+
+                else:
+                    record = tuple(map(lambda x: x.strip(), next_4_lines))
+                    fastq_seqs.append(record)
+
+            return(fastq_seqs)
+
+
+def fastx_printer(outfile, reads, accessions_to_filter, fasta=True):
+    with open(outfile, "w") as f:
+        if fasta:
+            for record in reads:
+                if record[0][1:] in accessions_to_filter:
+                    continue
+                else:
+                    print >>f, "{0}\n{1}".format(*record)
+
+        else:
+            for record in reads:
+                if record[0][1:] in accessions_to_filter:
+                    continue
+                else:
+                    print >>f, "{0}\n{1}\n{2}\n{3}".format(*record)
+
+
+def main(bamfile, read_path1, read_path2, orientation):
+    bamfile = pysam.Samfile(bamfile, 'rb')
+    accessions_to_filter = set()
+    for read in bamfile:
+        if abs(read.tlen) < 0 or abs(read.tlen) > 10000:
+            continue
+        if orientation == 'rf' and is_proper_aligned_unique_outie(read):
+            accessions_to_filter.add(read.qname)
+        if orientation == 'fr' and is_proper_aligned_unique_innie(read):
+            accessions_to_filter.add(read.qname)
+
+    if read_path1[-1] == 'a':
+        outpath1 = read_path1+'_filtered.fa'
+        outpath2 = read_path2+'_filtered.fa'
+        reads1 = fastx_parser(read_path1, fasta=True)
+        fastx_printer(outpath1, reads1, accessions_to_filter, fasta=True)
+        reads2 = fastx_parser(read_path2, fasta=True)
+        fastx_printer(outpath2, reads2, accessions_to_filter, fasta=True)
+
+    elif read_path1[-1] == 'q':
+        outpath1 = read_path1+'_filtered.fq'
+        outpath2 = read_path2+'_filtered.fq'
+        reads1 = fastx_parser(read_path1, fasta=False)
+        fastx_printer(outpath1, reads1, accessions_to_filter, fasta=False)
+        reads2 = fastx_parser(read_path2, fasta=False)
+        fastx_printer(outpath2, reads2, accessions_to_filter, fasta=False)
+
+    else:
+        print("file needs to end with 'a' for fasta or 'q' for fastq.")
+        sys.exit(1)
+
+
+
+
+    # reads1 = fasta_parser(open(read_path1, 'r'))
+    # outfile1 = open(read_path1+'_filtered.fa', 'w')
+
+    # for acc, seq in reads1.iteritems():
+    #     if acc in accessions_to_filter:
+    #         continue
+    #     else:
+    #         print >>outfile1, ">{0}\n{1}".format(acc, seq)
+
+    # reads2 = fasta_parser(open(read_path2, 'r'))
+    # outfile2 = open(read_path2+'_filtered.fa', 'w')
+    # for acc, seq in reads2.iteritems():
+    #     if acc in accessions_to_filter:
+    #         continue
+    #     else:
+    #         print >>outfile2, ">{0}\n{1}".format(acc, seq)
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('bam', type=str, help='bam file. ')
+    parser.add_argument('reads1', type=str, help='read1 file. ')
+    parser.add_argument('reads2', type=str, help='read2 file. ')
+    parser.add_argument('orientation', type=str, help='The orientation of the reads to filter. ')
+
+    args = parser.parse_args()
+
+    main(args.bam, args.reads1, args.reads2, args.orientation)
