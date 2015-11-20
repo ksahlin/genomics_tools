@@ -1,0 +1,22 @@
+#!/bin/bash
+module add bioinfo-tools bwa bowtie/1.1.0
+if [ $# -ne 4 ]; then
+        echo "Usage: `basename $0` <outdir> <contigs> <reads1> <reads2>"
+        echo "Final product will be at <outdir>/scaffoldSeq.fasta"
+        exit -1
+fi
+
+        outdir=$1
+        contigs=$2
+        reads1=$3
+	reads2=$4
+	
+        if [ ! -d $outdir ]; then
+                mkdir $outdir
+        fi
+        echo "Scaffolding contigs from $contigs with paired reads from $BAM_file and writing output to $outdir.";
+
+perl /proj/b2013169/private/software/scaffolders/opera_v1.2/bin/preprocess_reads.pl  $contigs $reads1 $reads2 $outdir"/mapped.bam" "bowtie" 
+opera1.2  $contigs  $outdir"/mapped.bam" $outdir
+
+

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#SBATCH -A b2013169
+#SBATCH -p node
+#SBATCH -n 1
+#SBATCH -t 02:00:00
+#SBATCH -J filter_MP_library
+
+for arg in "$@"; do
+    args="$args $arg"
+done
+
+
+~/git_repos/NxTrim/./nxtrim -1 /proj/b2013169/private/data/besst_pe_cont/data/hs14/0/frag1.fastq -2 /proj/b2013169/private/data/besst_pe_cont/data/hs14/0/frag2.fastq -O  /proj/b2013169/private/data/genomes/hs14/fastq/MP/nxtrim_sample_try_2 --separate &> /proj/b2013169/private/data/genomes/hs14/fastq/MP/nxtrim_log.txt
+
+# -1 /proj/b2013169/private/data/genomes/hs14/fastq/MP/gage_1_fr.fastq -2 /proj/b2013169/private/data/genomes/hs14/fastq/MP/gage_2_fr.fastq -O /proj/b2013169/private/data/genomes/hs14/fastq/MP/nxtrim_sample --separate 

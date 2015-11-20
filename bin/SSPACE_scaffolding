@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ $# -ne 4 ]; then
+        echo "Usage: `basename $0` <outdir> <contigs> <libraryfile> <basename>"
+        echo "Final product will be at <outdir>/<basename>.final.scaffolds.fasta"
+        exit -1
+fi
+
+        outdir=$1
+        contigs=$2
+        library=$3
+	basename=$4
+
+        if [ ! -d $outdir ]; then
+                mkdir  $outdir
+        fi
+        echo "Scaffolding contigs from $contigs with paired reads from $library and writing output to $outdir.";
+
+SSPACE -l $library -s $contigs -b $basename #sspace_out
+
+#mv sspace_out* /Users/ksahlin/Documents/workspace/data/data/scaffolding/diploid/test-simulation/SSPACE/abyss
+mv  $basename/$basename.final.scaffolds.fasta $outdir
+rm -r $basename
+#rm -r reads 
+#rm -r intermediate_results
+#rm -r bowtieoutput
+#rm -r pairinfo
+

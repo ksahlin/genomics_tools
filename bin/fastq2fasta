@@ -1,0 +1,10 @@
+#!/bin/bash
+module add bioinfo-tools bwa
+if [ $# -ne 2 ]; then
+        echo "Usage: `basename $0` <fastqfile> <fastafile> "
+        exit -1
+fi
+fastq=$1
+fasta=$2
+
+cat $fastq | awk '{if(NR%4==1) {printf(">%s\n",substr($0,2));} else if(NR%4==2) print;}' > $fasta

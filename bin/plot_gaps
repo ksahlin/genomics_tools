@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import argparse
+import pysam
 import re
 try:
         import matplotlib
@@ -31,13 +32,11 @@ def ReadInContigseqs(contigfile):
     return(cont_dict)
 
 def plot(n_lengths,outfile_path):
-    #labels = []
-    #labels.append("Mean gap size: {0}".format(sum(n_lengths)/len(n_lengths)))
-    #labels.append("Total number of gaps: {0}".format(len(n_lengths)))
     plt.hist(n_lengths,bins=100)
     plt.ylabel('Frequency')
     plt.xlabel('Gap size')
     plt.title(r'Mean gap size={0}, Total number of gaps={1}'.format(sum(n_lengths)/len(n_lengths), len(n_lengths)) )
+    print(r'Mean gap size={0}, Total number of gaps={1}'.format(sum(n_lengths)/len(n_lengths), len(n_lengths)) )
     plt.legend( )
     plt.savefig(outfile_path)
 

@@ -1,0 +1,82 @@
+#!/usr/bin/python
+# encoding:utf8
+"""This script takes one fastq file and reverse complements the reads. The reversed fastq file is printed to stdout.
+
+Usage:
+    revcompfastx fast<a/q>_file
+"""
+from __future__ import print_function
+import sys
+from itertools import islice
+
+
+
+nuc = {'A':'T','T':'A','G':'C','C':'G','K':'M','M':'K','R':'Y','Y':'R','S':'W','W':'W','B':'V','V':'B','H':'G','D':'C','X':'N','N':'N'}
+
+def reverse_complement(seq):
+    rev = ''
+    for i in range(len(seq) - 1,-1,-1):
+        rev += nuc[seq[i]]
+
+    return rev
+
+def reverse(qual):
+	return qual[::-1]
+
+
+def fasta(fastx_file):
+	with open(fastx_file) as f:
+	    while True:
+	        next_2_lines = list(islice(f, 2))
+	        if not next_2_lines:
+	            break
+
+	        else:
+	        	#accession
+	        	print(next_2_lines[0].strip())
+	        	#sequence
+	        	print(reverse_complement(next_2_lines[1].strip()))
+
+def fastq(fastx_file):
+	with open(fastx_file) as f:
+	    while True:
+	        next_4_lines = list(islice(f, 4))
+	        if not next_4_lines:
+	            break
+
+	        else:
+	        	#accession
+	        	print(next_4_lines[0].strip())
+	        	#sequence
+	        	print(reverse_complement(next_4_lines[1].strip()))
+
+	        	print(next_4_lines[2].strip())
+	        	#quality values
+	        	print( reverse(next_4_lines[3].strip()))
+
+if __name__ == '__main__':
+	if len(sys.argv) !=2:
+	    print(__doc__)
+	    sys.exit(1)
+
+	try:
+	    fastx_file = open(sys.argv[1],'r')
+	except:
+	    print("file not found or can't be opened in read mode")
+	    sys.exit(1)
+
+	if  sys.argv[1][-1] == 'a':
+		fasta(sys.argv[1])
+
+	elif  sys.argv[1][-1] =='q':
+		fastq(sys.argv[1])
+	else:
+		print("file needs to end with 'a' for fasta or 'q' for fastq.")
+	    	sys.exit(1)
+
+
+
+
+
+
+
