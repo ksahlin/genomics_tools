@@ -1,0 +1,45 @@
+#!/usr/bin/env python2.7
+
+import argparse
+import sys
+
+def fasta_parser(fasta_file):
+    fasta_seqs = {}
+    k = 0
+    temp = ''
+    accession = ''
+    for line in fasta_file:
+        if line[0] == '>' and k == 0:
+            accession = line[1:].strip().split()[0]
+            fasta_seqs[accession] = ''
+            k += 1
+        elif line[0] == '>':
+            fasta_seqs[accession] = temp
+            temp = ''
+            accession = line[1:].strip().split()[0]
+        else:
+            temp += line.strip()
+    fasta_seqs[accession] = temp
+    return fasta_seqs
+
+
+def main(fasta_file, min_size):
+    outpath = fasta_file+'_filtered.fa'
+    outfile = open(outpath,'w')
+    contigs = fasta_parser(open(fasta_file, 'r'))
+    for acc,seq in contigs.iteritems():
+        if len(seq) >= min_size:
+            print >> outfile, ">{0}\n{1}".format(acc,seq)
+
+
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser("Parses a fasta file and output all sequences longer than min_size to fasta format to /path/to/fasta_file_filtered.fa.")
+    parser.add_argument('fasta', type=str, help='Fasta file. ')
+    parser.add_argument('min_size', type=int, help='Min size of contigs.')
+
+    args = parser.parse_args()
+
+    main(args.fasta, args.min_size)
