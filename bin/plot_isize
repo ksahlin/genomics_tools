@@ -62,20 +62,30 @@ def plot_insert_sizes(bamfile,outfile_path, args):
     print("Number of pairs ----> ----> or <---- <-----", len(i_sizes_ff))
     print("contamine_rate:", len(i_sizes_fr)/ float(len(i_sizes_fr) + len(i_sizes_rf)) )
     n = float(len(i_sizes_rf))
-    mu_rf = sum(i_sizes_rf)/n
-    stddev_rf = (sum(list(map((lambda x: x ** 2 - 2 * x * mu_rf + mu_rf ** 2), i_sizes_rf))) / (n - 1)) ** 0.5
+    try:
+        mu_rf = sum(i_sizes_rf)/n
+        stddev_rf = (sum(list(map((lambda x: x ** 2 - 2 * x * mu_rf + mu_rf ** 2), i_sizes_rf))) / (n - 1)) ** 0.5
+    except:
+        mu_rf, stddev_rf = 0,0
     print("mean rf:", mu_rf)
     print("stddev rf:", stddev_rf)
 
     n = float(len(i_sizes_fr))
-    mu_fr = sum(i_sizes_fr)/n
-    stddev_fr = (sum(list(map((lambda x: x ** 2 - 2 * x * mu_fr + mu_fr ** 2), i_sizes_fr))) / (n - 1)) ** 0.5
+    try:
+        mu_fr = sum(i_sizes_fr)/n
+        stddev_fr = (sum(list(map((lambda x: x ** 2 - 2 * x * mu_fr + mu_fr ** 2), i_sizes_fr))) / (n - 1)) ** 0.5
+    except:
+        mu_fr, stddev_fr = 0,0
     print("mean fr:", mu_fr)
     print("stddev fr:", stddev_fr)
 
     n = float(len(i_sizes_ff))
-    mu_ff = sum(i_sizes_ff)/n
-    stddev_ff = (sum(list(map((lambda x: x ** 2 - 2 * x * mu_ff + mu_ff ** 2), i_sizes_ff))) / (n - 1)) ** 0.5
+    try:
+        mu_ff = sum(i_sizes_ff)/n
+        stddev_ff = (sum(list(map((lambda x: x ** 2 - 2 * x * mu_ff + mu_ff ** 2), i_sizes_ff))) / (n - 1)) ** 0.5
+    except:
+        mu_ff, stddev_ff = 0,0
+
     print("mean ff or rr:", mu_ff)
     print("stddev ff or rr", stddev_ff)
 
