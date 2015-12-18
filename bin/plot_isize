@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import pysam
+import sys
 
 try:
 	import matplotlib
@@ -9,7 +10,8 @@ try:
 	import seaborn as sns
 	sns.set_palette("husl", desat=.6)
 except ImportError:
-	pass
+	print("Could not import either matplotlib or seaborn")
+        sys.exit(1)
 #import matplotlib.pyplot as plt
 
 def is_proper_aligned_unique_innie(read):
