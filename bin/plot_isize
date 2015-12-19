@@ -94,12 +94,15 @@ def plot_insert_sizes(bamfile,outfile_path, args):
     labels = []
     labels.append("fr --> <--")
     labels.append("rf <-- -->")
+    labels.append("ff/rr --> -->")
     if args.fr:
-        plt.hist(i_sizes_rf,bins=100,color='b',label=labels[1])
-        plt.hist(i_sizes_fr,bins=100,color='r',label=labels[0])
+        plt.hist(i_sizes_rf,bins=100,color='b', alpha=0.4, label=labels[1])
+        plt.hist(i_sizes_fr,bins=100,color='r', alpha=0.4,label=labels[0])
+        plt.hist(i_sizes_ff,bins=100,color='g', alpha=0.4, label=labels[2])
     else: 
-        plt.hist(i_sizes_fr,bins=100,color='r',label=labels[0])
-        plt.hist(i_sizes_rf,bins=100,color='b',label=labels[1])
+        plt.hist(i_sizes_fr,bins=100,color='r', alpha=0.4, label=labels[0])
+        plt.hist(i_sizes_rf,bins=100,color='b', alpha=0.4, label=labels[1])
+        plt.hist(i_sizes_ff,bins=100,color='g', alpha=0.4, label=labels[2])
     plt.ylabel('Frequency') 
     plt.xlabel('Fragment size')  
     plt.legend( )
